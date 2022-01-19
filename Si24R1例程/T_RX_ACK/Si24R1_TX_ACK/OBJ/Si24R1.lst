@@ -1,0 +1,239 @@
+C51 COMPILER V9.56.0.0   SI24R1                                                            12/30/2019 10:12:38 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE SI24R1
+OBJECT MODULE PLACED IN ..\OBJ\Si24R1.obj
+COMPILER INVOKED BY: D:\ProgramFiles\keil\C51\BIN\C51.EXE ..\HARDWARE\NRF24L01\Si24R1.c OPTIMIZE(8,SPEED) BROWSE INCDIR(
+                    -..\HARDWARE\NRF24L01;..\HARDWARE\SPI;..\SYS\delay;..\SYS\sys;..\HARDWARE\LED;..\HARDWARE\UART;..\HARDWARE\KEY) DEBUG OBJ
+                    -ECTEXTEND PRINT(..\OBJ\Si24R1.lst) OBJECT(..\OBJ\Si24R1.obj)
+
+line level    source
+
+   1          #include "Si24R1.h"
+   2          #include "spi.h"
+   3          
+   4          
+   5          //----------------------------   全局变量   ----------------------------------
+   6          uchar code TX_ADDRESS[TX_ADR_WIDTH] = {0xE7,0xE7,0xE7,0xE7,0xE7};  // 定义一个静态发送地址
+   7          uchar code RX_ADDRESS[TX_ADR_WIDTH] = {0xE7,0xE7,0xE7,0xE7,0xE7};  // 定义一个静态接收地址
+   8          
+   9          uchar TX_BUF[TX_PLOAD_WIDTH] = {0,7,7,5,6,5,2,1};
+  10          uchar RX_BUF[TX_PLOAD_WIDTH] = {0};
+  11          
+  12          //=====================================================================================
+  13          //函数：spi_rw_byte()
+  14          //功能：根据SPI协议，写一字节数据到Si24R1，同时从Si24R1读出一字节
+  15          //=====================================================================================
+  16          uchar spi_rw_byte(uchar byte)
+  17          {
+  18   1              uchar status;
+  19   1              
+  20   1              SPDAT = byte;
+  21   1              
+  22   1              while( (SPSTAT & 0x80) == 0);   //等待发送完成
+  23   1              SPSTAT =  0xC0;                                 //SPI状态寄存器清零
+  24   1      
+  25   1              status = SPDAT;
+  26   1              return status;
+  27   1      
+  28   1      }
+  29          
+  30          //=====================================================================================
+  31          //函数：spi_rw_reg()#
+  32          //功能：写数据value到reg寄存器，同时返回状态寄存器值
+  33          //=====================================================================================
+  34          uchar spi_rw_reg(uchar reg, uchar value)
+  35          {
+  36   1              uchar status;
+  37   1      
+  38   1              CSN     = 0;                    // CSN置低，开始传输数据
+  39   1              status = spi_rw_byte(reg);      // 选择寄存器，同时返回状态字
+  40   1              spi_rw_byte(value);             // 然后写数据到该寄存器
+  41   1              CSN     = 1;                    // CSN拉高，结束数据传输
+  42   1              return(status);                         // 返回状态寄存器
+  43   1      }
+  44          
+  45          //=====================================================================================
+  46          //函数：spi_rd_reg()
+  47          //功能：从reg寄存器读一个字节的数据
+  48          //=====================================================================================
+  49          uchar spi_rd_reg(uchar reg)
+  50          {
+  51   1              uchar value;
+  52   1      
+  53   1              CSN     = 0;                    // CSN置低，开始传输数据
+C51 COMPILER V9.56.0.0   SI24R1                                                            12/30/2019 10:12:38 PAGE 2   
+
+  54   1              spi_rw_byte(reg);               // 选择寄存器
+  55   1              value   = spi_rw_byte(0);       // 然后从该寄存器读数据 
+  56   1              CSN     = 1;                    // CSN拉高，结束数据传输
+  57   1              return(value);                          // 返回寄存器数据
+  58   1      }
+  59          
+  60          //=====================================================================================
+  61          //函数：spi_read_buf()
+  62          //功能：从reg寄存器读出bytes个字节，通常用来读取接收通道数据 或 接收/发送地址
+  63          //=====================================================================================
+  64          uchar spi_read_buf(uchar reg, uchar *pBuf, uchar bytes)
+  65          {
+  66   1      
+  67   1              uchar status;
+  68   1              uchar i;        
+  69   1      
+  70   1              CSN     = 0;                     // CSN置低，开始传输数据
+  71   1              status  = spi_rw_byte(reg);      // 选择寄存器，同时返回状态字
+  72   1              for(i = 0; i < bytes; i++)
+  73   1          {
+  74   2                      pBuf[i] = spi_rw_byte(0);    // 逐个字节从Si24R1读出
+  75   2              }
+  76   1              CSN     = 1;                     // CSN拉高，结束数据传输
+  77   1              return(status);                  // 返回状态寄存器
+  78   1      }
+  79          
+  80          //=====================================================================================
+  81          //函数：spi_write_buf()
+  82          //功能：把pBuf缓存中的数据写入到Si24R1，通常用来写入发射通道数据 或 接收/发送地址
+  83          //=====================================================================================
+  84          uchar spi_write_buf(uchar reg, uchar *pBuf, uchar bytes)
+  85          {
+  86   1              uchar status, i;
+  87   1              CSN     = 0;                     // CSN置低，开始传输数据
+  88   1              status  = spi_rw_byte(reg);      // 选择寄存器，同时返回状态字
+  89   1              for(i = 0; i < bytes; i++)
+  90   1          {
+  91   2                      spi_rw_byte(pBuf[i]);        // 逐个字节写入Si24R1
+  92   2              }
+  93   1              CSN     = 1;                     // CSN拉高，结束数据传输
+  94   1              return(status);                  // 返回状态寄存器
+  95   1      }
+  96          
+  97          uchar Si24R1_Check(void)
+  98          {
+  99   1              uchar buf[5]={0XFA,0XFA,0XFA,0XFA,0XFA};
+ 100   1              uchar i;
+ 101   1              spi_write_buf(W_REGISTER+TX_ADDR,buf,5);//写入5个字节的地址.    
+ 102   1              spi_read_buf(TX_ADDR,buf,5); //读出写入的地址  
+ 103   1              for(i=0;i<5;i++)
+ 104   1                      if(buf[i]!=0XFA) break;                                                            
+ 105   1              if(i!=5)
+ 106   1                      return 1;//检测Si24R1错误       
+ 107   1              return 0;        //检测到Si24R1
+ 108   1      }
+ 109          
+ 110          
+ 111          //Si24R1 ACK 发射模式
+ 112          void Si24R1_Tx_ACK_Mode(void)
+ 113          {
+ 114   1              CE = 0;
+ 115   1      
+C51 COMPILER V9.56.0.0   SI24R1                                                            12/30/2019 10:12:38 PAGE 3   
+
+ 116   1              spi_rw_reg(W_REGISTER + SETUP_AW, 0x03);                                                // 5 byte Address width(默认值)
+ 117   1              spi_write_buf(W_REGISTER + TX_ADDR, TX_ADDRESS, TX_ADR_WIDTH);  // 写入发送地址
+ 118   1              spi_write_buf(W_REGISTER+RX_ADDR_P0,RX_ADDRESS,RX_ADR_WIDTH);   //设置TX节点地址,主要为了使能ACK        
+ 119   1              
+ 120   1      //      spi_rw_reg(W_REGISTER+EN_AA,0x01);                                                      //使能通道0的自动应答    
+ 121   1      //      spi_rw_reg(W_REGISTER+EN_RXADDR,0x01);                                                  //使能通道0的接收地址  
+ 122   1              spi_rw_reg(W_REGISTER+SETUP_RETR,0x1a);                                                 //设置自动重发间隔时间:500us + 86us;最大自动重发次数:10次
+ 123   1              spi_rw_reg(W_REGISTER + FEATURE, 0x04);                                         // 使能动态负载长度,Disable command W_TX_PAYLOAD_NOACK
+ 124   1              spi_rw_reg(W_REGISTER + DYNPD, 0x01);                                               // 使能接收管道0~5动态负载长度(发送端不可省略)
+ 125   1              spi_rw_reg(W_REGISTER + RF_CH, 40);                                             // 2400MHz - 2525MHz,choose CH 04,即2404MHz
+ 126   1              spi_rw_reg(W_REGISTER + RF_SETUP, 0x0F);                                                // 数据传输率2Mbps(**与24L01不同**),-18dbm TX power
+ 127   1              spi_rw_reg(W_REGISTER + CONFIG, 0x0e);                                          // TX_DS IRQ enable CRC使能，16位CRC校验，上电, PTX mode
+             -        
+ 128   1        
+ 129   1              CE = 1;
+ 130   1      }
+ 131          //Si24R1 ACK 接收模式
+ 132          void Si24R1_Rx_ACK_Mode(void)
+ 133          {
+ 134   1              CE = 0;
+ 135   1      
+ 136   1              spi_write_buf(W_REGISTER+RX_ADDR_P0,RX_ADDRESS,RX_ADR_WIDTH);   //写入Rx节点地址        
+ 137   1              spi_rw_reg(RX_PW_P0, TX_PLOAD_WIDTH);                           //设置负载长度
+ 138   1              
+ 139   1      //      spi_rw_reg(W_REGISTER+EN_AA,0x01);                                                      //使能通道0的自动应答    
+ 140   1              spi_rw_reg(W_REGISTER+EN_RXADDR,0x01);                                                  //使能通道0的接收地址  
+ 141   1              spi_rw_reg(W_REGISTER + FEATURE, 0x04);                                         // 使能动态负载长度,Disable command W_TX_PAYLOAD_NOA
+             -CK
+ 142   1              spi_rw_reg(W_REGISTER + SETUP_AW, 0x03);                                                // 5 byte Address width(默认值)
+ 143   1              spi_rw_reg(W_REGISTER + DYNPD, 0x01);                                               // 使能接收管道0~5动态负载长度(发送端不可省略)
+ 144   1          spi_rw_reg(W_REGISTER + RF_CH, 40);                                                 // 2400MHz - 2525MHz,choose CH 04,即2404MHz
+ 145   1              spi_rw_reg(W_REGISTER + RF_SETUP, 0x0F);                                                // 数据传输率2Mbps(**与24L01不同**),-18dbm TX power
+ 146   1              spi_rw_reg(W_REGISTER + CONFIG, 0x0f);                                          // TX_DS IRQ enable CRC使能，16位CRC校验，上电, PTX mo
+             -de        
+ 147   1        
+ 148   1              CE = 1;
+ 149   1      }
+ 150          
+ 151          
+ 152          //启动Si24R1,发送一次数据
+ 153          //txbuf:待发送数据首地址
+ 154          //返回值:发送完成状况
+ 155          uchar Si24R1_TxPacket(uchar *txbuf)
+ 156          {
+ 157   1              uchar sta;
+ 158   1              CE = 0;
+ 159   1              //使用NOACK模式时，应使用命令 W_TX_PAYLOAD_NOACK
+ 160   1      //      spi_write_buf(W_TX_PAYLOAD_NOACK,txbuf,TX_PLOAD_WIDTH);//写数据到TX BUF  
+ 161   1              spi_write_buf(W_TX_PAYLOAD,txbuf,TX_PLOAD_WIDTH);//写数据到TX BUF  
+ 162   1              CE = 1;//启动发送          
+ 163   1              while(IRQ == 1);                                          //等待发送完成
+ 164   1              sta = spi_rw_reg(STATUS,0x00);        // 返回状态寄存器    
+ 165   1              spi_rw_reg(W_REGISTER+STATUS,sta); //清除TX_DS或MAX_RT中断标志
+ 166   1              if(sta&MAX_RT)//达到最大重发次数
+ 167   1              {
+ 168   2                      spi_rw_reg(FLUSH_TX,0xff);//清除TX FIFO寄存器 
+ 169   2                      return MAX_RT; 
+ 170   2              }
+ 171   1              
+ 172   1              if(sta&TX_OK)//发送完成
+ 173   1              {
+ 174   2                      return TX_OK;
+C51 COMPILER V9.56.0.0   SI24R1                                                            12/30/2019 10:12:38 PAGE 4   
+
+ 175   2              }
+ 176   1              return 0xff;//其他原因发送失败
+ 177   1      }
+ 178          //启动Si24R1,接收一次数据
+ 179          //txbuf:待发送数据首地址
+ 180          //返回值:0，接收完成；其他，错误代码
+ 181          uchar Si24R1_RxPacket(uchar *rxbuf)
+ 182          {
+ 183   1              uchar sta;              
+ 184   1              CE = 1;
+ 185   1              sta=spi_rd_reg(STATUS);  //读取状态寄存器的值            
+ 186   1              spi_rw_reg(W_REGISTER+STATUS,sta); //清除TX_DS或MAX_RT中断标志
+ 187   1              if(sta&RX_OK)//接收到数据
+ 188   1              {
+ 189   2                      spi_read_buf(R_RX_PAYLOAD,rxbuf,RX_PLOAD_WIDTH);//读取数据
+ 190   2                      spi_rw_reg(FLUSH_RX,0xff);//清除RX FIFO寄存器 
+ 191   2                      return 0; 
+ 192   2              }          
+ 193   1              return 1;//没收到任何数据
+ 194   1      }                       
+ 195          
+ 196          
+ 197          /*
+ 198          void send_data(uchar *buf,uchar payloadwidth)                      //buf: payload 
+ 199          {
+ 200                  spi_write_buf(W_TX_PAYLOAD, buf, payloadwidth);                    // 写数据包到TX FIFO ACK
+ 201          //      spi_write_buf(W_TX_PAYLOAD_NOACK, buf, payloadwidth);                    // 写数据包到TX FIFO ACK
+ 202                  CE = 1;
+ 203                  
+ 204          }
+ 205          */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    434    ----
+   CONSTANT SIZE    =     15    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     16      15
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

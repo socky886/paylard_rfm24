@@ -1,0 +1,115 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              12/30/2019 10:13:14 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN ..\OBJ\main.obj
+COMPILER INVOKED BY: D:\ProgramFiles\keil\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\HARDWARE\NRF24L01;..
+                    -\HARDWARE\SPI;..\SYS\delay;..\SYS\sys;..\HARDWARE\LED;..\HARDWARE\UART;..\HARDWARE\KEY) DEBUG OBJECTEXTEND PRINT(..\OBJ\
+                    -main.lst) OBJECT(..\OBJ\main.obj)
+
+line level    source
+
+   1          #include <stdio.h>
+   2          #include <intrins.h>
+   3          
+   4          #include "sys.h"
+   5          #include "delay.h"
+   6          #include "Si24R1.h"
+   7          #include "spi.h"
+   8          #include "led.h"
+   9          #include "uart.h"
+  10          #include "key.h"
+  11          
+  12          //***************2017/6/27venus 调通 NoACKY模式和ACK模式**************
+  13          
+  14          idata char    outbuf[OLEN];                   //发送缓冲区的存储
+  15          idata uchar   ostart           = 0;           //发送缓冲区起始索引
+  16          idata uchar   oend             = 0;           //发送缓冲区起始索引
+  17          bit           sendfull         = 0;           //标志-：标识发送缓冲区满
+  18          bit           sendactive       = 0;           //标志：标识发送器激活
+  19          
+  20          idata char    inbuf[ILEN];                    //发送缓冲区的存储
+  21          idata uchar   istart           = 0;           //发送缓冲区起始索引
+  22          idata uchar   iend             = 0;           //发送缓冲区起始索引
+  23          bit inempty=0;
+  24          
+  25          //----------------------------    标志位        ----------------------------------
+  26          /*uchar bdata status_reg;
+  27          
+  28          
+  29          sbit  RX_DR      = status_reg^6;   //这是什么操作,不属于标准c，不能extern，只需要把需要用的地方再定义
+  30          sbit  TX_DS      = status_reg^5;
+  31          sbit  MAX_RT = status_reg^4;
+  32          sbit  TX_FULL = status_reg^0;
+  33          */
+  34          
+  35          //系统初始化
+  36          //相关功能，外设初始化
+  37          void System_Init()
+  38          {
+  39   1              EA = 1;
+  40   1              KEY_Init();
+  41   1              uart_init();
+  42   1              LED_Init();
+  43   1              SPI_Init();
+  44   1      }
+  45          
+  46          
+  47          void main(void)
+  48          {
+  49   1              uchar counter = 0;
+  50   1              uchar i;
+  51   1              
+  52   1              uchar tmp;
+  53   1              delay_900us();
+C51 COMPILER V9.56.0.0   MAIN                                                              12/30/2019 10:13:14 PAGE 2   
+
+  54   1              delay_900us();
+  55   1              delay_900us();
+  56   1      
+  57   1              System_Init();
+  58   1              
+  59   1              printf("\n================Tx ACK test=================\n");
+  60   1      /*      
+  61   1              while(Si24R1_Check())           
+  62   1              {
+  63   1                      printf("\nSi24R1 Check Error!\n");
+  64   1              }
+  65   1              printf("\nSi24R1 Check OK~\n");
+  66   1              */
+  67   1      //      Si24R1_Tx_NoACK_Mode();
+  68   1              Si24R1_Tx_ACK_Mode();   //进入发送模式
+  69   1              while(1)
+  70   1              {               
+  71   2                      TX_BUF[0] = counter++;                          
+  72   2                      if((tmp = Si24R1_TxPacket(TX_BUF)) == TX_OK)
+  73   2                      {
+  74   3                              printf("\nSend Data:");
+  75   3                              printf("%4d~",(uint)TX_BUF[0]);
+  76   3                              for(i=1;i<TX_PLOAD_WIDTH;i++)
+  77   3                              {
+  78   4                                      printf("%2d",(uint)TX_BUF[i]);
+  79   4                              }
+  80   3                              printf("\n");
+  81   3                      }
+  82   2                      printf("\nreturn val: %x\n",(uint)tmp);
+  83   2                      LED1 = !LED1;
+  84   2                      delay(TIME_500MS);
+  85   2                      delay(TIME_500MS);
+  86   2              }
+  87   1      }
+  88          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    169    ----
+   CONSTANT SIZE    =     87    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =     36    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

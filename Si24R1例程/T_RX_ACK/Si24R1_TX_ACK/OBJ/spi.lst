@@ -1,0 +1,73 @@
+C51 COMPILER V9.56.0.0   SPI                                                               12/30/2019 10:12:38 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE SPI
+OBJECT MODULE PLACED IN ..\OBJ\spi.obj
+COMPILER INVOKED BY: D:\ProgramFiles\keil\C51\BIN\C51.EXE ..\HARDWARE\SPI\spi.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\HARDW
+                    -ARE\NRF24L01;..\HARDWARE\SPI;..\SYS\delay;..\SYS\sys;..\HARDWARE\LED;..\HARDWARE\UART;..\HARDWARE\KEY) DEBUG OBJECTEXTEN
+                    -D PRINT(..\OBJ\spi.lst) OBJECT(..\OBJ\spi.obj)
+
+line level    source
+
+   1          #include <spi.h>
+   2          
+   3          
+   4          //=====================================================================================
+   5          //函数：spi_init()
+   6          //功能: SPI引脚初始化     
+   7          //=====================================================================================
+   8          void SPI_Init(void)
+   9          {
+  10   1      
+  11   1              P1M0 = 0x40;    //0 1 0 0 0 0 0 0  
+  12   1              P1M1 = 0xB8;    //1 0 1 1 1 0 0 0  p1.7 p1.3-p1.5 推挽输出 / p1.6 高阻输入 / 其余准双向
+  13   1              
+  14   1      /*      
+  15   1              //设置CE CSN MOSI SCK 推挽输出 MISO 高阻输入
+  16   1              P1M1 &= 0x07;
+  17   1              P1M1 |= 0x40;
+  18   1              P1M0 &= 0x07;
+  19   1              P1M0 |= 0xB8;   
+  20   1      */      
+  21   1              
+  22   1              //???
+  23   1              P3M0 = 0x05;    //0 0 0 0 0 1 0 1
+  24   1              P3M1 = 0x02;    //0 0 0 0 0 0 1 0  p3.0 p3.2 高阻输入 / p3.1推挽输出
+  25   1              
+  26   1              //  SPCTL
+  27   1              //  SSIG   SPEN  DORD  MSTR  |  CPOL  CPHA    SPR1 SPR0
+  28   1              //   1       1    0      1   |   0     0       0    0
+  29   1              //  SSIG:  1: MSTR位用于确定器件为主/从    0:  SS脚用于确定器件为主/从
+  30   1              //  SPEN:  1: SPI使能                                      0:  SPI禁止
+  31   1              //  DORD:  1: LSB先发送                                    0:  MSB先发送
+  32   1              //  MSTR:  1: 主机                         0:  从机
+  33   1              //  CPOL:  1: SCLK高电平空闲，前沿为下降沿 0： SCLK低电平空闲，前沿为上升沿 
+  34   1              //  CPHA:  1：SCLK前沿驱动，后时钟沿采样   0:  SS=0时驱动，前沿采样，后沿驱动
+  35   1              //  SPR1、SPR0:  00: CPU_CLK/4    01  CPU_CLK/16   10  CPU_CLK/64   11  CPU_CLK/128
+  36   1      
+  37   1              SPDAT  = 0;
+  38   1              SPSTAT = 0xC0;  //SPI状态寄存器清零
+  39   1      
+  40   1              SPCTL  = 0xD0+SPI_CLK;  //主机、MSB先发、SCLK低电平空闲,SPI_CLK
+  41   1      
+  42   1              CE  = 0;        // 待机
+  43   1              CSN = 1;        // SPI禁止
+  44   1              SCK = 0;        // SPI时钟置低
+  45   1      
+  46   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     28    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.56.0.0   SPI                                                               12/30/2019 10:12:38 PAGE 2   
+
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,59 @@
+C51 COMPILER V9.56.0.0   LED                                                               12/30/2019 10:12:39 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN ..\OBJ\led.obj
+COMPILER INVOKED BY: D:\ProgramFiles\keil\C51\BIN\C51.EXE ..\HARDWARE\LED\led.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\HARDW
+                    -ARE\NRF24L01;..\HARDWARE\SPI;..\SYS\delay;..\SYS\sys;..\HARDWARE\LED;..\HARDWARE\UART;..\HARDWARE\KEY) DEBUG OBJECTEXTEN
+                    -D PRINT(..\OBJ\led.lst) OBJECT(..\OBJ\led.obj)
+
+line level    source
+
+   1          #include "led.h"
+   2          #include "delay.h"
+   3          
+   4          void LED_Init(void)
+   5          {
+   6   1      //      P2M0 = 0x20;    //0 0 1 0 0 0 0 0  venus
+   7   1      //      P2M1 = 0x1f;    //0 0 0 1 1 1 1 1  p2.0~p2.4 推挽输出 / p2.5 高阻输入 / 余 准双向
+   8   1              P2M0 &= 0xF0;   //低四位清零
+   9   1              
+  10   1              P2M1 &= 0xF0;
+  11   1              P2M1 |= 0x0F;
+  12   1              LED1 = LED2 = LED3 = LED4 = 1;
+  13   1      }
+  14          
+  15          
+  16          void HorseRaceLED(void)
+  17          {
+  18   1              LED1 = 0;
+  19   1              delay(TIME_500MS);
+  20   1              LED1 = 1;
+  21   1              delay(TIME_500MS);
+  22   1              LED2 = 0;
+  23   1              delay(TIME_500MS);
+  24   1              LED2 = 1;
+  25   1              delay(TIME_500MS);
+  26   1              LED3 = 0;
+  27   1              delay(TIME_500MS);
+  28   1              LED3 = 1;
+  29   1              delay(TIME_500MS);
+  30   1              LED4 = 0;
+  31   1              delay(TIME_500MS);
+  32   1              LED4 = 1;
+  33   1              delay(TIME_500MS);
+  34   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    122    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

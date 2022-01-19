@@ -1,0 +1,9 @@
+"..\OBJ\main.obj",
+"..\OBJ\spi.obj",
+"..\OBJ\Si24R1.obj",
+"..\OBJ\uart.obj",
+"..\OBJ\led.obj",
+"..\OBJ\key.obj",
+"..\OBJ\delay.obj" 
+TO "..\OBJ\tx_rf" 
+PRINT("..\OBJ\tx_rf.m51") RAMSIZE(256) 

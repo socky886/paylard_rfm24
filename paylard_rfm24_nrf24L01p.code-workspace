@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"STC12LE5628AD.H": "cpp",
+			"STDIO.H": "cpp"
+		}
+	}
+}
