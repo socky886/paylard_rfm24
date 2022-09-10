@@ -109,7 +109,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
   uint8_t rs;
   uint8_t counter=0;
-  uint8_t temp;
+  uint8_t temp=0;
   int len=0;
   /* USER CODE END 1 */
 
@@ -136,19 +136,33 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   // HAL_Delay(1000);
-  rs=Si24R1_Check();
-  if(rs==0)
-    printf("check si24r1 ok\n");
-  else
-    printf("check si24r1 error\n");
+  // rs=Si24R1_Check();
+  // if(rs==0)
+  //   printf("check si24r1 ok\n");
+  // else
+  //   printf("check si24r1 error\n");
+
+  //   NRF24L01_init_cw(0x02);//2402M
+  //   while (1)
+  //   {
+  //     ;
+  //   }
+    
   
   if(rs==0x00)
   {
     // Si24R1_Tx_NoACK_Mode();
     // printf("enter tx no ack mode\n");
 
-    Si24R1_Rx_NoACK_Mode();
-    printf("enter rx no ack mode\n");
+    // Si24R1_Tx_ACK_Mode();
+    // printf("enter tx ack mode\n");
+
+    // Si24R1_Rx_NoACK_Mode();
+    // printf("enter rx no ack mode\n");
+
+    // Si24R1_Rx_ACK_Mode();
+    // printf("enter rx ack mode\n");
+
   }
   
   /* USER CODE END 2 */
@@ -164,9 +178,9 @@ int main(void)
     //   printf("check si24r1 error\n");
 
     // TX_BUF[0]=counter++;
-    // // temp=Si24R1_TxPacket(TX_BUF);
+    // temp=Si24R1_TxPacket(TX_BUF);
     // // printf("temp is %02x\n",temp);
-    // if(Si24R1_TxPacket(TX_BUF)==TX_OK )
+    // if(temp==TX_OK )
     // {
     //   printf("tx packet successfully:");
     //   printf("%4d,",TX_BUF[0]);
@@ -175,28 +189,63 @@ int main(void)
 		// 		printf("%2d,",TX_BUF[i]);
 		// 	}
 		// 	printf("\n");
-
+    // }
+    // else if(temp==MAX_RT)
+    // {
+    //   printf("tx max and timeout");
     // }
     // HAL_Delay(500);
 
     // temp=Si24R1_RxPacket(RX_BUF);
     // printf("temp is %02x\n",temp);
-    if(Si24R1_RxPacket(RX_BUF) == 0)
-		{
-			printf("Received data: ");
-			len=spi_rd_reg(R_RX_PL_WID);
-			for(int i = 0; i < len; i++)
-			{			
-				printf("%2d,",RX_BUF[i]);		
-			}	
-			printf("\n");
+
+    // if(Si24R1_RxPacket(RX_BUF) == 0)
+		// {
+    //   // printf("%d\n",RX_BUF[0]);	
+		// 	printf("Received data: ");
+		// 	len=spi_rd_reg(R_RX_PL_WID);
+		// 	for(int i = 0; i < len; i++)
+		// 	{			
+		// 		printf("%d,",RX_BUF[i]);		
+		// 	}	
+		// 	printf("\n");
+    // }
+
+    // Si24R1_Rx_Direct();
+
+    if(temp==1)
+    {
+      rs = Si24R1_Check();
+      if(rs==1)
+        temp=0;
     }
 
-    // rs = Si24R1_Check();
-    // if (rs == 0)
-    //   printf("check si24r1 ok\n");
-    // else
-    //   printf("check si24r1 error\n");
+
+    if(temp==0)
+    {
+      rs = Si24R1_Check();
+      if (rs == 0)
+      {
+        HAL_Delay(10);
+        if (Si24R1_Check() == 0)
+        {
+          printf("check si24r1 ok\n");
+          NRF24L01_init_cw(0x02); // 2402M
+          temp = 1;
+        }
+      }
+      else
+      {
+        temp = 0;
+        printf("check si24r1 error\n");
+      }
+      HAL_Delay(10);
+    }
+    
+
+
+    
+      
 
     // Set_CE();
     // HAL_Delay(10);
@@ -364,7 +413,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -397,7 +446,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 921600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;

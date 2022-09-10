@@ -185,6 +185,7 @@ uchar Si24R1_RxPacket(uchar *rxbuf)
 {
 	uchar sta;		
 	SEt_CE();// CE = 1;
+	
 	sta=spi_rd_reg(STATUS);  //读取状态寄存器的值    	 
 	spi_rw_reg(W_REGISTER+STATUS,sta); //清除TX_DS或MAX_RT中断标志
 	if(sta&RX_OK)//接收到数据

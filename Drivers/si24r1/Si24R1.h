@@ -92,5 +92,7 @@ uchar Si24R1_RxPacket(uchar *rxbuf);
 
 void send_data(uchar *buf,uchar payloadwidth);
 
+void Si24R1_Rx_Direct(void);
+
 #endif
 

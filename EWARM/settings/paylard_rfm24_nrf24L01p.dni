@@ -11,7 +11,7 @@ ByteLimit=50
 [StLinkDriver]
 CStepIntDis=_ 0
 LeaveTargetRunning=_ 0
-stlinkserialNo=67072624
+stlinkserialNo=67125424
 stlinkfoundProbes=
 stlinkResetStyle=0
 stlinkResetStrategy=3
@@ -36,7 +36,7 @@ ITMportsTermIO=0
 ITMportsLogFile=0
 ITMlogFile=$PROJ_DIR$\ITM.log
 [DebugChecksum]
-Checksum=-1559155948
+Checksum=475070364
 [CodeCoverage]
 Enabled=_ 0
 [CallStack]
@@ -93,6 +93,11 @@ ShowTimeLog=1
 SumEnabled=0
 ShowTimeSum=1
 SumSortOrder=0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\Core\Src\main.c}.147.5" 0 0 1 "" 0 "" 0
+Count=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -100,10 +105,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Count=0
 [Aliases]
 Count=0
 SuppressDialog=0
